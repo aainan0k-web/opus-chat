@@ -1,879 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opus 4.7 — Adaptive Intelligence</title>
 <script src="https://js.puter.com/v2/"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
- 
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06060a;--s1:#0c0c12;--s2:#111118;--s3:#16161e;
+  --b1:#1c1c26;--b2:#2a2a36;--b3:#3a3a48;
+  --tx:#e6e4e0;--t2:#a09e98;--t3:#5e5c58;--t4:#3a3836;
+  --ac:#d4a054;--ac2:#a07838;--ac3:#7a5c2c;
+  --gn:#4caf82;--gn2:#1a4030;--gn3:#0e2018;
+  --bl:#5a9ec4;--bl2:#1a2e40;--bl3:#0e1820;
+  --rd:#cf6060;--rd2:#401a1a;
+  --radius:8px;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;--serif:'Instrument Serif',Georgia,serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--font);font-size:15px;line-height:1.6;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b1);border-radius:3px}
+
+#app{display:flex;flex-direction:column;height:100vh;max-width:860px;margin:0 auto}
+
+/* ═══ HEADER ═══ */
+#hdr{padding:14px 22px 0;flex-shrink:0}
+#hdr-top{display:flex;justify-content:space-between;align-items:center}
+#hdr h1{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ac);letter-spacing:-0.01em}
+#hdr h1 span{font-style:italic;opacity:0.6;font-size:16px;margin-left:6px}
+.hdr-btns{display:flex;gap:4px}
+.hdr-btn{background:none;border:1px solid var(--b1);color:var(--t3);width:32px;height:32px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.hdr-btn:hover{color:var(--ac);border-color:var(--b2)}
+.hdr-btn.active{color:var(--ac);border-color:var(--ac3);background:var(--ac)11}
+
+/* ═══ TOOLBAR ═══ */
+#bar{display:flex;gap:6px;padding:10px 22px 12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--b1)}
+.pill{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--b1);background:var(--s1);color:var(--t3);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap}
+.pill:hover{border-color:var(--b2);color:var(--t2)}
+.pill.on{border-color:var(--ac3);color:var(--ac);background:var(--ac)08}
+.pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5}
+.pill-file{color:var(--gn);border-color:var(--gn2)}
+.pill-file:hover{border-color:var(--gn)}
+.sep{width:1px;height:16px;background:var(--b1);margin:0 2px}
+#effort{font-family:var(--mono);font-size:11px;background:var(--s1);color:var(--t3);border:1px solid var(--b1);border-radius:4px;padding:2px 6px;cursor:pointer}
+#effort:focus{outline:none;border-color:var(--ac3)}
+
+/* ═══ SETTINGS ═══ */
+#cfg{display:none;padding:10px 22px 12px;border-bottom:1px solid var(--b1);animation:slideD .2s ease}
+@keyframes slideD{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+#cfg.open{display:block}
+.cfg-row{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start}
+.cfg-row label{font-family:var(--mono);font-size:10px;color:var(--t3);min-width:90px;padding-top:7px;text-transform:uppercase;letter-spacing:.05em}
+.cfg-row textarea,.cfg-row select{flex:1;background:var(--s1);color:var(--t2);border:1px solid var(--b1);border-radius:4px;padding:6px 8px;font-family:var(--mono);font-size:11px;resize:vertical}
+.cfg-row textarea:focus,.cfg-row select:focus{outline:none;border-color:var(--ac3)}
+
+/* ═══ ATTACHMENTS ═══ */
+#att{display:none;padding:6px 22px;gap:6px;overflow-x:auto;flex-shrink:0;border-bottom:1px solid var(--b1)}
+#att.show{display:flex}
+.att-item{display:flex;align-items:center;gap:5px;padding:4px 8px;background:var(--s2);border:1px solid var(--b1);border-radius:6px;font-family:var(--mono);font-size:10px;color:var(--t2);flex-shrink:0}
+.att-item img{width:26px;height:26px;object-fit:cover;border-radius:3px}
+.att-x{cursor:pointer;color:var(--t4);font-size:13px;margin-left:3px;transition:color .15s}
+.att-x:hover{color:var(--rd)}
+
+/* ═══ CHAT ═══ */
+#chat{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:18px}
+#chat.drag{background:var(--ac)04;outline:2px dashed var(--ac)22;outline-offset:-6px}
+
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;color:var(--t4)}
+#welcome .w-icon{font-size:42px;opacity:.25;font-family:var(--serif)}
+#welcome p{font-size:14px;max-width:380px;color:var(--t3)}
+#welcome .w-hint{font-family:var(--mono);font-size:10px;color:var(--t4)}
+
+.m{animation:mIn .25s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.m-who{font-family:var(--mono);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.m.u .m-who{color:var(--t3)}
+.m.a .m-who{color:var(--ac2)}
+
+.m-imgs{display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.m-imgs img{max-width:100px;max-height:80px;border-radius:4px;border:1px solid var(--b1);object-fit:cover}
+
+.m-body{padding:12px 16px;border-radius:var(--radius);border:1px solid var(--b1)}
+.m.u .m-body{background:var(--s1)}
+.m.a .m-body{background:var(--s2)}
+.m-body p{margin-bottom:.45em}.m-body p:last-child{margin-bottom:0}
+.m-body strong{color:var(--tx);font-weight:600}
+.m-body em{color:var(--t2)}
+.m-body a{color:var(--ac);text-decoration:underline}
+.m-body blockquote{border-left:2px solid var(--b2);padding-left:12px;color:var(--t2);margin:6px 0}
+.m-body ul,.m-body ol{margin:6px 0 6px 18px}.m-body li{margin-bottom:2px}
+.m-body h1,.m-body h2,.m-body h3{font-family:var(--serif);font-weight:400;margin:10px 0 4px;color:var(--tx)}
+.m-body h1{font-size:1.3em}.m-body h2{font-size:1.15em}.m-body h3{font-size:1.05em}
+
+.m-body pre{background:var(--bg);border:1px solid var(--b1);border-radius:6px;padding:10px 14px;overflow-x:auto;margin:8px 0;font-family:var(--mono);font-size:12.5px;line-height:1.5;position:relative}
+.m-body code{font-family:var(--mono);font-size:.87em;background:var(--s1);padding:1px 5px;border-radius:3px}
+.m-body pre code{background:none;padding:0;font-size:1em}
+.copy-btn{position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:10px;background:var(--s2);border:1px solid var(--b1);color:var(--t3);padding:2px 7px;border-radius:4px;cursor:pointer;opacity:0;transition:opacity .2s}
+.m-body pre:hover .copy-btn{opacity:1}
+.copy-btn:hover{color:var(--ac);border-color:var(--ac3)}
+
+/* ═══ THINKING ═══ */
+.thk{margin:6px 0 8px;border:1px solid var(--gn2);border-radius:6px;overflow:hidden}
+.thk-h{display:flex;align-items:center;gap:6px;padding:7px 11px;background:var(--gn3);cursor:pointer;user-select:none;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--gn)}
+.thk-h .arr{font-size:8px;transition:transform .2s}.thk-h.open .arr{transform:rotate(90deg)}
+.thk-b{display:none;padding:10px 13px;background:var(--gn3);color:var(--gn);font-family:var(--mono);font-size:11.5px;line-height:1.5;max-height:320px;overflow-y:auto;white-space:pre-wrap;opacity:.85}
+.thk-b.open{display:block}
+
+/* ═══ SEARCH ═══ */
+.srch{margin:6px 0 8px;border:1px solid var(--bl2);border-radius:6px;overflow:hidden}
+.srch-h{display:flex;align-items:center;gap:6px;padding:7px 11px;background:var(--bl3);cursor:pointer;user-select:none;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--bl)}
+.srch-h .arr{font-size:8px;transition:transform .2s}.srch-h.open .arr{transform:rotate(90deg)}
+.srch-b{display:none;padding:10px 13px;background:var(--bl3);color:var(--bl);font-family:var(--mono);font-size:11.5px;line-height:1.5;max-height:220px;overflow-y:auto;white-space:pre-wrap;opacity:.85}
+.srch-b.open{display:block}
+
+.loader{display:inline-block;width:7px;height:7px;background:var(--ac);border-radius:50%;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:.15}50%{opacity:1}}
+
+/* ═══ INPUT ═══ */
+#inp{display:flex;gap:8px;padding:12px 22px 8px;border-top:1px solid var(--b1);align-items:flex-end;flex-shrink:0}
+#inp textarea{flex:1;background:var(--s1);color:var(--tx);border:1px solid var(--b1);border-radius:var(--radius);padding:11px 14px;font-family:var(--font);font-size:15px;line-height:1.5;resize:none;min-height:46px;max-height:160px;transition:border-color .2s}
+#inp textarea:focus{outline:none;border-color:var(--ac3)}
+#inp textarea::placeholder{color:var(--t4)}
+#go{width:44px;height:44px;background:var(--ac2);color:var(--bg);border:none;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:16px}
+#go:hover{background:var(--ac)}
+#go:disabled{opacity:.25;cursor:not-allowed}
+#foot{display:flex;justify-content:space-between;padding:0 22px 8px;flex-shrink:0}
+#stat{font-family:var(--mono);font-size:10px;color:var(--t4);min-height:14px}
+#stat.err{color:var(--rd)}
+#counter{font-family:var(--mono);font-size:10px;color:var(--t4)}
+</style>
+</head>
+<body>
 <div id="app">
-  <div id="header">
-    <div id="header-top">
-      <h1>◈ Opus 4.7</h1>
-      <div id="header-actions">
-        <button class="icon-btn" onclick="toggleSettings()" title="Settings">⚙</button>
-        <button class="icon-btn" onclick="clearChat()" title="New chat">+</button>
+  <div id="hdr">
+    <div id="hdr-top">
+      <h1>Opus 4.7<span>adaptive</span></h1>
+      <div class="hdr-btns">
+        <button class="hdr-btn" onclick="toggleCfg()" title="Settings">⚙</button>
+        <button class="hdr-btn" onclick="exportChat()" title="Export">↓</button>
+        <button class="hdr-btn" onclick="clearAll()" title="New chat">+</button>
       </div>
     </div>
-    <div id="toolbar">
-      <label class="chip active" id="thinkingChip" onclick="toggle('thinking')">
-        <span class="chip-dot"></span> Thinking
-      </label>
-      <label class="chip" id="searchChip" onclick="toggle('search')">
-        <span class="chip-dot"></span> Web Search
-      </label>
-      <label class="chip file-chip" onclick="document.getElementById('fileInput').click()">
-        ＋ Files
-      </label>
-      <input type="file" id="fileInput" multiple accept="image/*,.txt,.md,.csv,.json,.js,.py,.html,.css" onchange="handleFiles(this.files)" hidden>
-    </div>
-    <!-- Settings panel -->
-    <div id="settings" class="hidden">
-      <label class="setting-row">
-        <span>System prompt</span>
-        <textarea id="sysPrompt" rows="2" placeholder="e.g. You are a helpful coding assistant…"></textarea>
-      </label>
-      <label class="setting-row">
-        <span>Search model</span>
-        <select id="searchModel">
-          <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
-          <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
-          <option value="openai/gpt-5.2-chat">GPT-5.2</option>
-        </select>
-      </label>
-    </div>
   </div>
- 
-  <!-- Attached files preview -->
-  <div id="attachments" class="hidden"></div>
- 
-  <!-- Chat area -->
+
+  <div id="bar">
+    <div class="pill on" id="pThink" onclick="tog('think')"><span class="dot"></span>Thinking</div>
+    <div class="pill" id="pSearch" onclick="tog('search')"><span class="dot"></span>Web Search</div>
+    <div class="pill pill-file" onclick="$('fIn').click()">＋ Files</div>
+    <input type="file" id="fIn" multiple accept="image/*,.txt,.md,.csv,.json,.js,.py,.html,.css,.ts,.xml,.log,.yaml,.yml,.env,.sh,.sql,.php,.rb,.go,.rs,.c,.cpp,.h,.java,.kt,.swift" onchange="addFiles(this.files)" hidden>
+    <div class="sep"></div>
+    <select id="effort" title="Thinking effort hint">
+      <option value="">auto effort</option>
+      <option value="low">low effort</option>
+      <option value="medium">medium</option>
+      <option value="high">high</option>
+      <option value="xhigh">xhigh</option>
+    </select>
+  </div>
+
+  <div id="cfg">
+    <div class="cfg-row"><label>System</label><textarea id="sys" rows="2" placeholder="Custom instructions…"></textarea></div>
+    <div class="cfg-row"><label>Search via</label><select id="sModel"><option value="gpt-4.1-mini">GPT-4.1 Mini</option><option value="gpt-4.1-nano">GPT-4.1 Nano (fast)</option><option value="openai/gpt-5.2-chat">GPT-5.2 Chat</option></select></div>
+  </div>
+
+  <div id="att"></div>
+
   <div id="chat">
-    <div id="empty">
-      <div class="empty-icon">◈</div>
-      <p>Opus 4.7 with adaptive thinking, file uploads, and web search.</p>
-      <span class="hint">Drag files here · Toggle features above · Enter to send</span>
+    <div id="welcome">
+      <div class="w-icon">◈</div>
+      <p>Claude Opus 4.7 with adaptive thinking, file analysis, and web search. The most capable model available.</p>
+      <span class="w-hint">Drop files anywhere · Enter to send · Shift+Enter for newline</span>
     </div>
   </div>
- 
-  <!-- Input -->
-  <div id="input-bar">
-    <textarea id="prompt" placeholder="Message Opus 4.7…" rows="1"></textarea>
-    <button id="send" onclick="go()">
-      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/></svg>
-    </button>
+
+  <div id="inp">
+    <textarea id="q" placeholder="Message Opus 4.7…" rows="1" oninput="resizeQ()" onkeydown="keyQ(event)"></textarea>
+    <button id="go" onclick="send()">➤</button>
   </div>
-  <div id="status"></div>
+  <div id="foot"><div id="stat"></div><div id="counter"></div></div>
 </div>
- 
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
-  body {
-    background: #08080a;
-    color: #e4e2df;
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 15px;
-    line-height: 1.6;
-    height: 100vh;
-    overflow: hidden;
-  }
- 
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    max-width: 820px;
-    margin: 0 auto;
-  }
- 
-  /* ── HEADER ── */
-  #header {
-    padding: 14px 20px 10px;
-    border-bottom: 1px solid #1a1a1f;
-    flex-shrink: 0;
-  }
- 
-  #header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
- 
-  #header h1 {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 15px;
-    font-weight: 600;
-    color: #c49a6c;
-    letter-spacing: 0.03em;
-  }
- 
-  #header-actions { display: flex; gap: 6px; }
- 
-  .icon-btn {
-    background: #111115;
-    border: 1px solid #1a1a1f;
-    color: #666;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-  }
- 
-  .icon-btn:hover { color: #c49a6c; border-color: #333; }
- 
-  /* ── TOOLBAR ── */
-  #toolbar {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
- 
-  .chip {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid #222;
-    background: #0e0e12;
-    color: #555;
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.2s;
-  }
- 
-  .chip:hover { border-color: #444; color: #888; }
- 
-  .chip.active {
-    border-color: #c49a6c44;
-    color: #c49a6c;
-    background: #c49a6c11;
-  }
- 
-  .chip-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.6;
-  }
- 
-  .file-chip { color: #5a9; border-color: #1a3a2a; }
-  .file-chip:hover { border-color: #2a5a3a; color: #7cb; }
- 
-  /* ── SETTINGS ── */
-  #settings {
-    margin-top: 10px;
-    padding: 10px 0 4px;
-    border-top: 1px solid #1a1a1f;
-  }
- 
-  #settings.hidden { display: none; }
- 
-  .setting-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: #555;
-  }
- 
-  .setting-row span { min-width: 100px; padding-top: 6px; }
- 
-  .setting-row textarea,
-  .setting-row select {
-    flex: 1;
-    background: #0a0a0e;
-    color: #bbb;
-    border: 1px solid #1a1a1f;
-    border-radius: 4px;
-    padding: 6px 8px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    resize: vertical;
-  }
- 
-  .setting-row textarea:focus,
-  .setting-row select:focus { outline: none; border-color: #c49a6c55; }
- 
-  /* ── ATTACHMENTS ── */
-  #attachments {
-    display: flex;
-    gap: 8px;
-    padding: 8px 20px;
-    overflow-x: auto;
-    flex-shrink: 0;
-    border-bottom: 1px solid #1a1a1f;
-  }
- 
-  #attachments.hidden { display: none; }
- 
-  .att {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    background: #111115;
-    border: 1px solid #1a1a1f;
-    border-radius: 6px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: #888;
-    flex-shrink: 0;
-  }
- 
-  .att img {
-    width: 28px;
-    height: 28px;
-    object-fit: cover;
-    border-radius: 3px;
-  }
- 
-  .att .att-x {
-    cursor: pointer;
-    color: #555;
-    font-size: 14px;
-    margin-left: 4px;
-  }
- 
-  .att .att-x:hover { color: #c45c5c; }
- 
-  /* ── CHAT ── */
-  #chat {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
- 
-  #chat::-webkit-scrollbar { width: 4px; }
-  #chat::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
- 
-  #chat.dragover {
-    background: #c49a6c08;
-    outline: 2px dashed #c49a6c33;
-    outline-offset: -8px;
-  }
- 
-  #empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    text-align: center;
-    color: #333;
-  }
- 
-  .empty-icon { font-size: 36px; opacity: 0.3; margin-bottom: 4px; }
-  #empty p { font-size: 14px; max-width: 360px; }
-  .hint { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #2a2a30; }
- 
-  .msg { animation: fadeUp 0.25s ease; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
- 
-  .msg-role {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-  }
- 
-  .msg.user .msg-role { color: #444; }
-  .msg.ai .msg-role { color: #8a6d4a; }
- 
-  .msg-body {
-    padding: 12px 16px;
-    border-radius: 6px;
-    border: 1px solid #1a1a1f;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
- 
-  .msg.user .msg-body { background: #0e0e12; }
-  .msg.ai .msg-body { background: #111115; }
- 
-  .msg-body p { margin-bottom: 0.5em; }
-  .msg-body p:last-child { margin-bottom: 0; }
-  .msg-body strong { color: #ddd; }
-  .msg-body em { color: #bbb; }
- 
-  .msg-body ul, .msg-body ol {
-    margin: 6px 0 6px 20px;
-  }
- 
-  .msg-body li { margin-bottom: 3px; }
- 
-  .msg-body pre {
-    background: #0a0a0e;
-    border: 1px solid #1a1a1f;
-    border-radius: 4px;
-    padding: 10px 12px;
-    overflow-x: auto;
-    margin: 8px 0;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    line-height: 1.5;
-    position: relative;
-  }
- 
-  .msg-body code {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.88em;
-    background: #0a0a0e;
-    padding: 1px 4px;
-    border-radius: 3px;
-  }
- 
-  .msg-body pre code { background: none; padding: 0; }
- 
-  .msg-body a { color: #c49a6c; text-decoration: underline; }
-  .msg-body blockquote {
-    border-left: 2px solid #333;
-    padding-left: 12px;
-    color: #888;
-    margin: 8px 0;
-  }
- 
-  .msg-images {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-  }
- 
-  .msg-images img {
-    max-width: 120px;
-    max-height: 90px;
-    border-radius: 4px;
-    border: 1px solid #1a1a1f;
-    object-fit: cover;
-  }
- 
-  /* ── THINKING ── */
-  .think-box {
-    margin: 6px 0 10px;
-    border: 1px solid #1a3a2a;
-    border-radius: 5px;
-    overflow: hidden;
-  }
- 
-  .think-toggle {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 11px;
-    background: #0c1117;
-    cursor: pointer;
-    user-select: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    color: #5a9;
-  }
- 
-  .think-toggle .arrow { font-size: 8px; transition: transform 0.2s; }
-  .think-toggle.open .arrow { transform: rotate(90deg); }
- 
-  .think-body {
-    display: none;
-    padding: 10px 12px;
-    background: #0c1117;
-    color: #5a9;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    line-height: 1.5;
-    max-height: 300px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
- 
-  .think-body.open { display: block; }
- 
-  /* ── SEARCH RESULTS ── */
-  .search-box {
-    margin: 6px 0 10px;
-    border: 1px solid #1a2a3a;
-    border-radius: 5px;
-    overflow: hidden;
-  }
- 
-  .search-toggle {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 11px;
-    background: #0c1320;
-    cursor: pointer;
-    user-select: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    color: #5a8cb0;
-  }
- 
-  .search-toggle .arrow { font-size: 8px; transition: transform 0.2s; }
-  .search-toggle.open .arrow { transform: rotate(90deg); }
- 
-  .search-body {
-    display: none;
-    padding: 10px 12px;
-    background: #0c1320;
-    color: #5a8cb0;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    line-height: 1.5;
-    max-height: 200px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
- 
-  .search-body.open { display: block; }
- 
-  /* ── LOADING ── */
-  .dot {
-    display: inline-block;
-    width: 6px; height: 6px;
-    background: #c49a6c;
-    border-radius: 50%;
-    animation: pulse 1s infinite;
-  }
- 
-  @keyframes pulse {
-    0%,100% { opacity: 0.2; }
-    50% { opacity: 1; }
-  }
- 
-  /* ── INPUT ── */
-  #input-bar {
-    display: flex;
-    gap: 8px;
-    padding: 12px 20px;
-    border-top: 1px solid #1a1a1f;
-    align-items: flex-end;
-    flex-shrink: 0;
-  }
- 
-  #prompt {
-    flex: 1;
-    background: #0e0e12;
-    color: #e4e2df;
-    border: 1px solid #1a1a1f;
-    border-radius: 6px;
-    padding: 11px 13px;
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 15px;
-    line-height: 1.5;
-    resize: none;
-    min-height: 44px;
-    max-height: 150px;
-  }
- 
-  #prompt:focus { outline: none; border-color: #8a6d4a; }
-  #prompt::placeholder { color: #2a2a30; }
- 
-  #send {
-    width: 42px; height: 42px;
-    background: #8a6d4a;
-    color: #08080a;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.2s;
-  }
- 
-  #send:hover { background: #c49a6c; }
-  #send:disabled { opacity: 0.3; cursor: not-allowed; }
- 
-  #status {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: #333;
-    padding: 0 20px 8px;
-    min-height: 16px;
-  }
- 
-  .err { color: #c45c5c !important; }
-</style>
- 
+
 <script>
-// ── STATE ──
-const chatEl = document.getElementById('chat');
-const promptEl = document.getElementById('prompt');
-const sendBtn = document.getElementById('send');
-const statusEl = document.getElementById('status');
-const attEl = document.getElementById('attachments');
- 
-let history = [];
-let pendingFiles = []; // {name, type, data (base64), preview}
-let busy = false;
-let features = { thinking: true, search: false };
- 
-// ── TOGGLES ──
-function toggle(key) {
-  features[key] = !features[key];
-  document.getElementById(key + 'Chip').classList.toggle('active', features[key]);
-}
- 
-function toggleSettings() {
-  document.getElementById('settings').classList.toggle('hidden');
-}
- 
-function clearChat() {
-  history = [];
-  pendingFiles = [];
-  chatEl.innerHTML = `<div id="empty"><div class="empty-icon">◈</div><p>New conversation started.</p><span class="hint">Drag files · Toggle features · Enter to send</span></div>`;
-  updateAttachments();
-}
- 
-// ── FILE HANDLING ──
-function handleFiles(fileList) {
-  for (const file of fileList) {
-    const reader = new FileReader();
-    if (file.type.startsWith('image/')) {
-      reader.onload = (e) => {
-        const base64 = e.target.result.split(',')[1];
-        pendingFiles.push({
-          name: file.name,
-          type: file.type,
-          data: base64,
-          preview: e.target.result,
-          isImage: true
-        });
-        updateAttachments();
-      };
-      reader.readAsDataURL(file);
-    } else {
-      reader.onload = (e) => {
-        pendingFiles.push({
-          name: file.name,
-          type: file.type,
-          data: e.target.result,
-          preview: null,
-          isImage: false
-        });
-        updateAttachments();
-      };
-      reader.readAsText(file);
+const $=id=>document.getElementById(id);
+const chatEl=$('chat'),qEl=$('q'),goBtn=$('go'),statEl=$('stat'),attEl=$('att'),counterEl=$('counter');
+
+let H=[],files=[],busy=false,feat={think:true,search:false},msgCount=0;
+
+// ── Toggles ──
+function tog(k){feat[k]=!feat[k];$('p'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on',feat[k])}
+function toggleCfg(){$('cfg').classList.toggle('open')}
+function clearAll(){H=[];files=[];msgCount=0;chatEl.innerHTML='<div id="welcome"><div class="w-icon">◈</div><p>New conversation.</p><span class="w-hint">Drop files · Enter to send</span></div>';updAtt();counterEl.textContent=''}
+
+// ── Files ──
+function addFiles(fl){
+  for(const f of fl){
+    const r=new FileReader();
+    if(f.type.startsWith('image/')){
+      r.onload=e=>{files.push({name:f.name,type:f.type,data:e.target.result.split(',')[1],prev:e.target.result,img:true});updAtt()};
+      r.readAsDataURL(f);
+    }else{
+      r.onload=e=>{files.push({name:f.name,type:f.type,data:e.target.result,prev:null,img:false});updAtt()};
+      r.readAsText(f);
     }
   }
-  // Reset input so same file can be re-selected
-  document.getElementById('fileInput').value = '';
+  $('fIn').value='';
 }
- 
-function removeFile(idx) {
-  pendingFiles.splice(idx, 1);
-  updateAttachments();
+function rmFile(i){files.splice(i,1);updAtt()}
+function updAtt(){
+  if(!files.length){attEl.style.display='none';attEl.innerHTML='';return}
+  attEl.style.display='flex';
+  attEl.innerHTML=files.map((f,i)=>`<div class="att-item">${f.img?`<img src="${f.prev}">`:'📄'} ${esc(f.name)} <span class="att-x" onclick="rmFile(${i})">×</span></div>`).join('');
 }
- 
-function updateAttachments() {
-  if (pendingFiles.length === 0) {
-    attEl.classList.add('hidden');
-    attEl.innerHTML = '';
-    return;
+
+// ── Drag & Drop ──
+chatEl.addEventListener('dragover',e=>{e.preventDefault();chatEl.classList.add('drag')});
+chatEl.addEventListener('dragleave',()=>chatEl.classList.remove('drag'));
+chatEl.addEventListener('drop',e=>{e.preventDefault();chatEl.classList.remove('drag');if(e.dataTransfer.files.length)addFiles(e.dataTransfer.files)});
+
+// ── Input ──
+function resizeQ(){qEl.style.height='auto';qEl.style.height=Math.min(qEl.scrollHeight,160)+'px'}
+function keyQ(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function st(t,err){statEl.textContent=t;statEl.className=err?'err':''}
+
+// ── Markdown ──
+function md(text){
+  let h=esc(text);
+  h=h.replace(/```(\w*)\n([\s\S]*?)```/g,(m,lang,code)=>`<pre><button class="copy-btn" onclick="cpCode(this)">copy</button><code>${code}</code></pre>`);
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>');
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g,'<em>$1</em>');
+  h=h.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  h=h.replace(/^&gt;&gt;&gt;\s*([\s\S]*?)$/gm,'<blockquote>$1</blockquote>');
+  h=h.replace(/^&gt;\s*(.+)$/gm,'<blockquote>$1</blockquote>');
+  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  h=h.replace(/^[-•]\s+(.+)$/gm,'<li>$1</li>');
+  h=h.replace(/^\d+\.\s+(.+)$/gm,'<li>$1</li>');
+  h=h.replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>');
+  h=h.replace(/---/g,'<hr style="border:none;border-top:1px solid var(--b1);margin:8px 0">');
+  h=h.replace(/\n\n+/g,'</p><p>');
+  h=h.replace(/\n/g,'<br>');
+  return '<p>'+h+'</p>';
+}
+function cpCode(btn){
+  const code=btn.parentElement.querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(()=>{btn.textContent='copied!';setTimeout(()=>btn.textContent='copy',1500)});
+}
+
+function scroll(){chatEl.scrollTop=chatEl.scrollHeight}
+function togPanel(id,btn){const el=$(id);btn.classList.toggle('open');el.classList.toggle('open')}
+
+// ── Render message ──
+function addM(role,text,think,srch,imgs){
+  const w=$('welcome');if(w)w.remove();
+  msgCount++;
+  const el=document.createElement('div');
+  el.className='m '+(role==='user'?'u':'a');
+  let h=`<div class="m-who">${role==='user'?'You':'Opus 4.7'}</div>`;
+  if(imgs&&imgs.length)h+=`<div class="m-imgs">${imgs.map(s=>`<img src="${s}">`).join('')}</div>`;
+  if(srch){const id='sr'+Date.now();h+=`<div class="srch"><div class="srch-h" onclick="togPanel('${id}',this)"><span class="arr">▶</span> Web search results</div><div class="srch-b" id="${id}">${esc(srch)}</div></div>`}
+  if(think){const id='th'+Date.now();h+=`<div class="thk"><div class="thk-h" onclick="togPanel('${id}',this)"><span class="arr">▶</span> Adaptive thinking</div><div class="thk-b" id="${id}">${esc(think)}</div></div>`}
+  h+=`<div class="m-body">${md(text)}</div>`;
+  el.innerHTML=h;chatEl.appendChild(el);scroll();
+  counterEl.textContent=msgCount+' messages';
+}
+
+// ── Build user content ──
+function buildContent(text,fs){
+  if(!fs.length)return text;
+  const content=[];
+  let combined=text;
+  for(const f of fs){
+    if(f.img){content.push({type:'image',source:{type:'base64',media_type:f.type,data:f.data}})}
+    else{combined=`[File: ${f.name}]\n\`\`\`\n${f.data}\n\`\`\`\n\n`+combined}
   }
-  attEl.classList.remove('hidden');
-  attEl.innerHTML = pendingFiles.map((f, i) => {
-    const thumb = f.isImage ? `<img src="${f.preview}">` : '📄';
-    return `<div class="att">${thumb} <span>${esc(f.name)}</span> <span class="att-x" onclick="removeFile(${i})">×</span></div>`;
-  }).join('');
-}
- 
-// ── DRAG & DROP ──
-chatEl.addEventListener('dragover', (e) => { e.preventDefault(); chatEl.classList.add('dragover'); });
-chatEl.addEventListener('dragleave', () => chatEl.classList.remove('dragover'));
-chatEl.addEventListener('drop', (e) => {
-  e.preventDefault();
-  chatEl.classList.remove('dragover');
-  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
-});
- 
-// ── INPUT ──
-promptEl.addEventListener('input', () => {
-  promptEl.style.height = 'auto';
-  promptEl.style.height = Math.min(promptEl.scrollHeight, 150) + 'px';
-});
- 
-promptEl.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); }
-});
- 
-// ── HELPERS ──
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
- 
-function setStatus(t, err) {
-  statusEl.textContent = t;
-  statusEl.className = err ? 'err' : '';
-}
- 
-function fmt(text) {
-  let h = esc(text);
-  // Code blocks
-  h = h.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-  // Inline code
-  h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // Bold
-  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Italic
-  h = h.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
-  // Links
-  h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-  // Blockquotes
-  h = h.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-  // Unordered lists
-  h = h.replace(/^[-•] (.+)$/gm, '<li>$1</li>');
-  h = h.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-  // Ordered lists
-  h = h.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-  // Headings
-  h = h.replace(/^### (.+)$/gm, '<strong style="font-size:1.05em">$1</strong>');
-  h = h.replace(/^## (.+)$/gm, '<strong style="font-size:1.1em">$1</strong>');
-  h = h.replace(/^# (.+)$/gm, '<strong style="font-size:1.15em">$1</strong>');
-  // Paragraphs
-  h = h.replace(/\n\n+/g, '</p><p>');
-  h = h.replace(/\n/g, '<br>');
-  return '<p>' + h + '</p>';
-}
- 
-function scrollDown() { chatEl.scrollTop = chatEl.scrollHeight; }
- 
-function togglePanel(id, btn) {
-  const el = document.getElementById(id);
-  btn.classList.toggle('open');
-  el.classList.toggle('open');
-}
- 
-// ── BUILD MESSAGES ──
-function buildUserContent(text, files) {
-  if (!files.length) return text;
- 
-  const content = [];
- 
-  for (const f of files) {
-    if (f.isImage) {
-      content.push({
-        type: 'image',
-        source: { type: 'base64', media_type: f.type, data: f.data }
-      });
-    } else {
-      // Text files: prepend as context
-      text = `[File: ${f.name}]\n${f.data}\n\n${text}`;
-    }
-  }
- 
-  content.push({ type: 'text', text: text });
+  content.push({type:'text',text:combined||'Analyze the attached file(s).'});
   return content;
 }
- 
-// ── WEB SEARCH ──
-async function webSearch(query) {
-  setStatus('Searching the web…');
-  try {
-    const model = document.getElementById('searchModel').value;
-    const resp = await puter.ai.chat(
-      `Search the web and provide comprehensive, factual results for: ${query}`,
-      {
-        model: model,
-        tools: [{ type: 'web_search' }],
-        stream: false
-      }
-    );
- 
-    let searchResult = '';
-    if (resp?.message?.content) {
-      if (Array.isArray(resp.message.content)) {
-        searchResult = resp.message.content
-          .filter(b => b.type === 'text')
-          .map(b => b.text)
-          .join('\n');
-      } else {
-        searchResult = typeof resp.message.content === 'string' ? resp.message.content : JSON.stringify(resp.message.content);
-      }
-    } else if (typeof resp === 'string') {
-      searchResult = resp;
-    }
- 
-    return searchResult || '(No search results found)';
-  } catch (err) {
-    console.error('Search error:', err);
-    return '(Web search failed: ' + (err.message || err) + ')';
-  }
+
+// ── Web search ──
+async function doSearch(q){
+  st('Searching the web…');
+  try{
+    const r=await puter.ai.chat(`Search the web thoroughly and return comprehensive, factual, up-to-date results for: ${q}\n\nInclude sources, dates, and key facts.`,{model:$('sModel').value,tools:[{type:'web_search'}],stream:false});
+    let out='';
+    if(r?.message?.content){
+      if(Array.isArray(r.message.content))out=r.message.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+      else out=typeof r.message.content==='string'?r.message.content:JSON.stringify(r.message.content);
+    }else if(typeof r==='string')out=r;
+    return out||'(No results)';
+  }catch(e){return '(Search failed: '+(e.message||e)+')'}
 }
- 
-// ── RENDER MESSAGE ──
-function addMsg(role, text, thinking, searchCtx, imageData) {
-  const empty = document.getElementById('empty');
-  if (empty) empty.remove();
- 
-  const el = document.createElement('div');
-  el.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
- 
-  let html = '<div class="msg-role">' + (role === 'user' ? 'You' : 'Opus 4.7') + '</div>';
- 
-  // Attached images preview (user)
-  if (imageData && imageData.length) {
-    html += '<div class="msg-images">' + imageData.map(src => `<img src="${src}">`).join('') + '</div>';
-  }
- 
-  // Search context block
-  if (searchCtx) {
-    const sid = 's' + Date.now();
-    html += '<div class="search-box">'
-      + `<div class="search-toggle" onclick="togglePanel('${sid}', this)">`
-      + '<span class="arrow">▶</span> Web search results</div>'
-      + `<div class="search-body" id="${sid}">${esc(searchCtx)}</div></div>`;
-  }
- 
-  // Thinking block
-  if (thinking) {
-    const tid = 't' + Date.now();
-    html += '<div class="think-box">'
-      + `<div class="think-toggle" onclick="togglePanel('${tid}', this)">`
-      + '<span class="arrow">▶</span> Adaptive thinking</div>'
-      + `<div class="think-body" id="${tid}">${esc(thinking)}</div></div>`;
-  }
- 
-  html += '<div class="msg-body">' + fmt(text) + '</div>';
-  el.innerHTML = html;
-  chatEl.appendChild(el);
-  scrollDown();
+
+// ── Export ──
+function exportChat(){
+  if(!H.length){st('Nothing to export');return}
+  let txt='# Opus 4.7 Chat Export\n# '+new Date().toLocaleString()+'\n\n';
+  H.forEach(m=>{
+    const role=m.role==='user'?'YOU':'OPUS 4.7';
+    const content=typeof m.content==='string'?m.content:'(multimodal content)';
+    txt+=`## ${role}\n${content}\n\n---\n\n`;
+  });
+  const blob=new Blob([txt],{type:'text/markdown'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='opus-chat-'+Date.now()+'.md';
+  a.click();
+  st('Chat exported');setTimeout(()=>st(''),2000);
 }
- 
+
 // ── MAIN SEND ──
-async function go() {
-  const text = promptEl.value.trim();
-  if ((!text && !pendingFiles.length) || busy) return;
- 
-  busy = true;
-  sendBtn.disabled = true;
-  promptEl.value = '';
-  promptEl.style.height = 'auto';
- 
-  const files = [...pendingFiles];
-  pendingFiles = [];
-  updateAttachments();
- 
-  // Show user message
-  const imgPreviews = files.filter(f => f.isImage).map(f => f.preview);
-  const displayText = text || '(file upload)';
-  addMsg('user', displayText, null, null, imgPreviews);
- 
-  // Build content for API
-  const userContent = buildUserContent(text || 'Describe and analyze the attached file(s).', files);
- 
-  // Add to history
-  history.push({ role: 'user', content: userContent });
- 
-  // Loading indicator
-  const loader = document.createElement('div');
-  loader.className = 'msg ai';
-  loader.innerHTML = '<div class="msg-role">Opus 4.7</div><div class="msg-body"><span class="dot"></span></div>';
-  chatEl.appendChild(loader);
-  scrollDown();
- 
-  let searchCtx = null;
- 
-  try {
-    // ── STEP 1: Web search if enabled ──
-    if (features.search && text) {
-      searchCtx = await webSearch(text);
-      setStatus('Thinking with search context…');
+async function send(){
+  const text=qEl.value.trim();
+  if((!text&&!files.length)||busy)return;
+  busy=true;goBtn.disabled=true;
+  qEl.value='';qEl.style.height='auto';
+
+  const fs=[...files];files=[];updAtt();
+  const imgPrev=fs.filter(f=>f.img).map(f=>f.prev);
+  addM('user',text||'(file upload)',null,null,imgPrev);
+
+  const userContent=buildContent(text||'Describe and analyze the attached file(s).',fs);
+  H.push({role:'user',content:userContent});
+
+  // Loader
+  const ld=document.createElement('div');
+  ld.className='m a';
+  ld.innerHTML='<div class="m-who">Opus 4.7</div><div class="m-body"><span class="loader"></span></div>';
+  chatEl.appendChild(ld);scroll();
+
+  let srchCtx=null;
+  try{
+    // Step 1: Web search
+    if(feat.search&&text)srchCtx=await doSearch(text);
+
+    // Step 2: Build call
+    let msgs=[...H];
+    const sysParts=[];
+    const sysVal=$('sys').value.trim();
+    if(sysVal)sysParts.push(sysVal);
+    if(srchCtx)sysParts.push('Here are current web search results relevant to the user\'s query. Use them for an accurate, up-to-date answer:\n\n'+srchCtx);
+    if(sysParts.length)msgs=[{role:'system',content:sysParts.join('\n\n')},...msgs];
+
+    const opts={model:'claude-opus-4-7',stream:false};
+    if(feat.think){
+      opts.thinking={type:'adaptive'};
+      const eff=$('effort').value;
+      if(eff)opts.thinking.effort=eff;
     }
- 
-    // ── STEP 2: Build messages for Claude ──
-    let messages = [...history];
- 
-    // Inject search results as system context
-    const sysPrompt = document.getElementById('sysPrompt').value.trim();
-    let systemParts = [];
-    if (sysPrompt) systemParts.push(sysPrompt);
-    if (searchCtx) {
-      systemParts.push(`The user has web search enabled. Here are current web search results relevant to their query. Use this information to give an accurate, up-to-date answer:\n\n${searchCtx}`);
-    }
- 
-    // Build options
-    const opts = {
-      model: 'claude-opus-4-7',
-      stream: false
+
+    st(feat.think?'Adaptive thinking…':'Generating…');
+    const resp=await puter.ai.chat(msgs,opts);
+    ld.remove();
+
+    // Step 3: Parse
+    let thk=null,out='';
+    const tryParse=(obj)=>{
+      if(!obj)return;
+      const arr=Array.isArray(obj)?obj:null;
+      if(arr){for(const b of arr){if(b.type==='thinking')thk=b.thinking;else if(b.type==='text')out+=b.text}}
     };
- 
-    if (features.thinking) {
-      opts.thinking = { type: 'adaptive' };
-    }
- 
-    if (systemParts.length) {
-      // Prepend system message
-      messages = [
-        { role: 'system', content: systemParts.join('\n\n') },
-        ...messages
-      ];
-    }
- 
-    setStatus(features.thinking ? 'Adaptive thinking…' : 'Generating…');
- 
-    const resp = await puter.ai.chat(messages, opts);
- 
-    loader.remove();
- 
-    // ── STEP 3: Parse response ──
-    let thinkText = null;
-    let respText = '';
- 
-    if (resp?.message?.content && Array.isArray(resp.message.content)) {
-      for (const block of resp.message.content) {
-        if (block.type === 'thinking') thinkText = block.thinking;
-        else if (block.type === 'text') respText += block.text;
-      }
-    } else if (resp?.content && Array.isArray(resp.content)) {
-      for (const block of resp.content) {
-        if (block.type === 'thinking') thinkText = block.thinking;
-        else if (block.type === 'text') respText += block.text;
-      }
-    } else if (resp?.message) {
-      respText = typeof resp.message === 'string' ? resp.message : (resp.message.content || '');
-    } else if (typeof resp === 'string') {
-      respText = resp;
-    }
- 
-    if (!respText && !thinkText) respText = '(empty response)';
- 
-    addMsg('ai', respText || '…', thinkText, searchCtx);
-    history.push({ role: 'assistant', content: respText });
- 
-    setStatus('');
- 
-  } catch (err) {
-    loader.remove();
-    console.error('Error:', err);
-    addMsg('ai', 'Error: ' + (err.message || err));
-    setStatus('Failed', true);
-    // Remove failed message from history
-    if (history.length && history[history.length - 1].role === 'user') {
-      history.pop();
-    }
+    if(resp?.message?.content)tryParse(Array.isArray(resp.message.content)?resp.message.content:null)||(() =>{out=typeof resp.message.content==='string'?resp.message.content:typeof resp.message==='string'?resp.message:''})();
+    else if(resp?.content)tryParse(resp.content);
+    else if(resp?.message)out=typeof resp.message==='string'?resp.message:(resp.message.content||'');
+    else if(typeof resp==='string')out=resp;
+    if(!out&&!thk)out='(empty response)';
+
+    addM('ai',out||'…',thk,srchCtx);
+    H.push({role:'assistant',content:out});
+    st('');
+  }catch(e){
+    ld.remove();
+    console.error(e);
+    addM('ai','Error: '+(e.message||e));
+    st('Failed',true);
+    if(H.length&&H[H.length-1].role==='user')H.pop();
   }
- 
-  busy = false;
-  sendBtn.disabled = false;
-  promptEl.focus();
+  busy=false;goBtn.disabled=false;qEl.focus();
 }
- 
-// ── INIT ──
-promptEl.focus();
+
+qEl.focus();
 </script>
+</body>
+</html>
